@@ -1,0 +1,42 @@
+import { TimetableSlot } from '../types';
+
+export const initialTimetableSlots: TimetableSlot[] = [
+  // Monday
+  { id: 'tt-1', dayOfWeek: 'Monday', periodNumber: 1, startTime: '08:30 AM', endTime: '09:20 AM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'MTH-101', subjectName: 'Mathematics', teacherId: 'tch-2', teacherName: 'Eleanor Patterson', roomNumber: 'Room 301' },
+  { id: 'tt-2', dayOfWeek: 'Monday', periodNumber: 2, startTime: '09:25 AM', endTime: '10:15 AM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'PHY-201', subjectName: 'Physics', teacherId: 'tch-1', teacherName: 'Dr. Robert Vance', roomNumber: 'Lab 2' },
+  { id: 'tt-3', dayOfWeek: 'Monday', periodNumber: 3, startTime: '10:30 AM', endTime: '11:20 AM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'ENG-102', subjectName: 'English Lit', teacherId: 'tch-3', teacherName: 'Jonathan Mercer', roomNumber: 'Room 301' },
+  { id: 'tt-4', dayOfWeek: 'Monday', periodNumber: 4, startTime: '11:25 AM', endTime: '12:15 PM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'HST-202', subjectName: 'World History', teacherId: 'tch-5', teacherName: 'Marcus Brody', roomNumber: 'Room 301' },
+  { id: 'tt-5', dayOfWeek: 'Monday', periodNumber: 5, startTime: '01:00 PM', endTime: '01:50 PM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'CSC-301', subjectName: 'Computer Science', teacherId: 'tch-6', teacherName: 'Clara Oswald', roomNumber: 'Comp Lab 1' },
+  { id: 'tt-6', dayOfWeek: 'Monday', periodNumber: 6, startTime: '01:55 PM', endTime: '02:45 PM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'PED-100', subjectName: 'Physical Education', teacherId: 'tch-7', teacherName: 'David Kowalski', roomNumber: 'Gymnasium' },
+
+  // Tuesday
+  { id: 'tt-7', dayOfWeek: 'Tuesday', periodNumber: 1, startTime: '08:30 AM', endTime: '09:20 AM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'PHY-201', subjectName: 'Physics', teacherId: 'tch-1', teacherName: 'Dr. Robert Vance', roomNumber: 'Lab 2' },
+  { id: 'tt-8', dayOfWeek: 'Tuesday', periodNumber: 2, startTime: '09:25 AM', endTime: '10:15 AM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'MTH-101', subjectName: 'Mathematics', teacherId: 'tch-2', teacherName: 'Eleanor Patterson', roomNumber: 'Room 301' },
+  { id: 'tt-9', dayOfWeek: 'Tuesday', periodNumber: 3, startTime: '10:30 AM', endTime: '11:20 AM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'CSC-301', subjectName: 'Computer Science', teacherId: 'tch-6', teacherName: 'Clara Oswald', roomNumber: 'Comp Lab 1' },
+  { id: 'tt-10', dayOfWeek: 'Tuesday', periodNumber: 4, startTime: '11:25 AM', endTime: '12:15 PM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'ENG-102', subjectName: 'English Lit', teacherId: 'tch-3', teacherName: 'Jonathan Mercer', roomNumber: 'Room 301' },
+  { id: 'tt-11', dayOfWeek: 'Tuesday', periodNumber: 5, startTime: '01:00 PM', endTime: '01:50 PM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'ART-105', subjectName: 'Visual Arts', teacherId: 'tch-8', teacherName: 'Victoria Sterling', roomNumber: 'Art Studio' },
+  { id: 'tt-12', dayOfWeek: 'Tuesday', periodNumber: 6, startTime: '01:55 PM', endTime: '02:45 PM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'HST-202', subjectName: 'World History', teacherId: 'tch-5', teacherName: 'Marcus Brody', roomNumber: 'Room 301' },
+
+  // Wednesday
+  { id: 'tt-13', dayOfWeek: 'Wednesday', periodNumber: 1, startTime: '08:30 AM', endTime: '09:20 AM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'MTH-101', subjectName: 'Mathematics', teacherId: 'tch-2', teacherName: 'Eleanor Patterson', roomNumber: 'Room 301' },
+  { id: 'tt-14', dayOfWeek: 'Wednesday', periodNumber: 2, startTime: '09:25 AM', endTime: '10:15 AM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'ENG-102', subjectName: 'English Lit', teacherId: 'tch-3', teacherName: 'Jonathan Mercer', roomNumber: 'Room 301' },
+  { id: 'tt-15', dayOfWeek: 'Wednesday', periodNumber: 3, startTime: '10:30 AM', endTime: '11:20 AM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'PHY-201', subjectName: 'Physics Lab', teacherId: 'tch-1', teacherName: 'Dr. Robert Vance', roomNumber: 'Lab 2' },
+  { id: 'tt-16', dayOfWeek: 'Wednesday', periodNumber: 4, startTime: '11:25 AM', endTime: '12:15 PM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'PHY-201', subjectName: 'Physics Lab', teacherId: 'tch-1', teacherName: 'Dr. Robert Vance', roomNumber: 'Lab 2' },
+  { id: 'tt-17', dayOfWeek: 'Wednesday', periodNumber: 5, startTime: '01:00 PM', endTime: '01:50 PM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'HST-202', subjectName: 'World History', teacherId: 'tch-5', teacherName: 'Marcus Brody', roomNumber: 'Room 301' },
+  { id: 'tt-18', dayOfWeek: 'Wednesday', periodNumber: 6, startTime: '01:55 PM', endTime: '02:45 PM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'CSC-301', subjectName: 'Computer Science', teacherId: 'tch-6', teacherName: 'Clara Oswald', roomNumber: 'Comp Lab 1' },
+
+  // Thursday
+  { id: 'tt-19', dayOfWeek: 'Thursday', periodNumber: 1, startTime: '08:30 AM', endTime: '09:20 AM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'CSC-301', subjectName: 'Computer Science', teacherId: 'tch-6', teacherName: 'Clara Oswald', roomNumber: 'Comp Lab 1' },
+  { id: 'tt-20', dayOfWeek: 'Thursday', periodNumber: 2, startTime: '09:25 AM', endTime: '10:15 AM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'MTH-101', subjectName: 'Mathematics', teacherId: 'tch-2', teacherName: 'Eleanor Patterson', roomNumber: 'Room 301' },
+  { id: 'tt-21', dayOfWeek: 'Thursday', periodNumber: 3, startTime: '10:30 AM', endTime: '11:20 AM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'ENG-102', subjectName: 'English Lit', teacherId: 'tch-3', teacherName: 'Jonathan Mercer', roomNumber: 'Room 301' },
+  { id: 'tt-22', dayOfWeek: 'Thursday', periodNumber: 4, startTime: '11:25 AM', endTime: '12:15 PM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'PED-100', subjectName: 'Physical Education', teacherId: 'tch-7', teacherName: 'David Kowalski', roomNumber: 'Sports Ground' },
+  { id: 'tt-23', dayOfWeek: 'Thursday', periodNumber: 5, startTime: '01:00 PM', endTime: '01:50 PM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'PHY-201', subjectName: 'Physics', teacherId: 'tch-1', teacherName: 'Dr. Robert Vance', roomNumber: 'Lab 2' },
+  { id: 'tt-24', dayOfWeek: 'Thursday', periodNumber: 6, startTime: '01:55 PM', endTime: '02:45 PM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'ART-105', subjectName: 'Visual Arts', teacherId: 'tch-8', teacherName: 'Victoria Sterling', roomNumber: 'Art Studio' },
+
+  // Friday
+  { id: 'tt-25', dayOfWeek: 'Friday', periodNumber: 1, startTime: '08:30 AM', endTime: '09:20 AM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'MTH-101', subjectName: 'Mathematics Quiz', teacherId: 'tch-2', teacherName: 'Eleanor Patterson', roomNumber: 'Room 301' },
+  { id: 'tt-26', dayOfWeek: 'Friday', periodNumber: 2, startTime: '09:25 AM', endTime: '10:15 AM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'HST-202', subjectName: 'World History', teacherId: 'tch-5', teacherName: 'Marcus Brody', roomNumber: 'Room 301' },
+  { id: 'tt-27', dayOfWeek: 'Friday', periodNumber: 3, startTime: '10:30 AM', endTime: '11:20 AM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'PHY-201', subjectName: 'Physics Problem Solving', teacherId: 'tch-1', teacherName: 'Dr. Robert Vance', roomNumber: 'Lab 2' },
+  { id: 'tt-28', dayOfWeek: 'Friday', periodNumber: 4, startTime: '11:25 AM', endTime: '12:15 PM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'ENG-102', subjectName: 'English Debate', teacherId: 'tch-3', teacherName: 'Jonathan Mercer', roomNumber: 'Auditorium' },
+  { id: 'tt-29', dayOfWeek: 'Friday', periodNumber: 5, startTime: '01:00 PM', endTime: '02:00 PM', classId: 'cls-10', className: 'Grade 10', section: 'A', subjectCode: 'GEN-CLUB', subjectName: 'Student Clubs & Activities', teacherId: 'tch-6', teacherName: 'Clara Oswald', roomNumber: 'Activity Hall' },
+];
