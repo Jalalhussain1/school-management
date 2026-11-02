@@ -27,6 +27,7 @@ export interface Student {
   emergencyContact: string;
   attendanceRate?: number;
   totalFeeDue?: number;
+  portalStatus?: 'Active' | 'Pending' | 'Not Invited';
 }
 
 export type TeacherStatus = 'Active' | 'On Leave' | 'Resigned';
@@ -49,6 +50,7 @@ export interface Teacher {
   subjects: string[];
   avatar?: string;
   address?: string;
+  portalStatus?: 'Active' | 'Pending' | 'Not Invited';
 }
 
 export interface SchoolClass {

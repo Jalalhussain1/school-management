@@ -8,6 +8,7 @@ import {
   IconButton,
   Tooltip,
   Chip,
+  CircularProgress,
 } from '@mui/material';
 import {
   UserPlus,
@@ -15,6 +16,9 @@ import {
   Edit,
   Trash2,
   GraduationCap,
+  Mail,
+  CheckCircle,
+  Clock,
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { AppPageTitle } from '../../components/common/AppPageTitle';
@@ -31,7 +35,7 @@ import { Teacher } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 
 export const TeachersPage: React.FC = () => {
-  const { teachers, deleteTeacher } = useSchool();
+  const { teachers, deleteTeacher, inviteTeacher } = useSchool();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('ALL');
@@ -44,6 +48,16 @@ export const TeachersPage: React.FC = () => {
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [detailTeacher, setDetailTeacher] = useState<Teacher | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Teacher | null>(null);
+  const [invitingId, setInvitingId] = useState<string | null>(null);
+
+  const handleInvite = async (teacher: Teacher) => {
+    setInvitingId(teacher.id);
+    try {
+      await inviteTeacher(teacher.id);
+    } finally {
+      setInvitingId(null);
+    }
+  };
 
   const filteredTeachers = useMemo(() => {
     return teachers.filter((t) => {
@@ -164,11 +178,60 @@ export const TeachersPage: React.FC = () => {
       render: (row) => <StatusBadge status={row.status} />,
     },
     {
+      id: 'portalStatus',
+      label: 'Portal Access',
+      render: (row) => {
+        if (row.portalStatus === 'Active') {
+          return (
+            <Chip
+              icon={<CheckCircle size={13} style={{ marginLeft: 6 }} />}
+              label="Active"
+              size="small"
+              color="success"
+              variant="outlined"
+              sx={{ fontWeight: 700, height: 24, fontSize: '0.75rem' }}
+            />
+          );
+        }
+        if (row.portalStatus === 'Pending') {
+          return (
+            <Chip
+              icon={<Clock size={13} style={{ marginLeft: 6 }} />}
+              label="Invited"
+              size="small"
+              color="warning"
+              variant="outlined"
+              sx={{ fontWeight: 700, height: 24, fontSize: '0.75rem' }}
+            />
+          );
+        }
+        return (
+          <Chip
+            label="Not Invited"
+            size="small"
+            sx={{ fontWeight: 600, height: 24, fontSize: '0.75rem', bgcolor: 'action.hover', color: 'text.secondary' }}
+          />
+        );
+      },
+    },
+    {
       id: 'actions',
       label: 'Actions',
       align: 'right',
       render: (row) => (
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+          {row.email && row.portalStatus !== 'Active' && (
+            <Tooltip title={row.portalStatus === 'Pending' ? 'Resend Portal Invitation Email' : 'Send Portal Invitation Email'}>
+              <IconButton
+                size="small"
+                disabled={invitingId === row.id}
+                onClick={() => handleInvite(row)}
+                sx={{ color: 'secondary.main' }}
+              >
+                {invitingId === row.id ? <CircularProgress size={16} color="inherit" /> : <Mail size={17} />}
+              </IconButton>
+            </Tooltip>
+          )}
           <Tooltip title="View Faculty Profile">
             <IconButton size="small" onClick={() => setDetailTeacher(row)} sx={{ color: 'primary.main' }}>
               <Eye size={17} />

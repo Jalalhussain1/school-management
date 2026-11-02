@@ -29,7 +29,6 @@ import {
   Plus,
   User,
   Settings,
-  RotateCcw,
   LogOut,
   ShieldCheck,
   CheckCircle2,
@@ -56,7 +55,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onMobileToggle, onOpenSearch }) 
   const theme = useTheme();
   const navigate = useNavigate();
   const { mode, toggleTheme } = useAppTheme();
-  const { notifications, markNotificationRead, clearAllNotifications, resetAllData, settings, showToast } = useSchool();
+  const { notifications, markNotificationRead, clearAllNotifications, settings, showToast } = useSchool();
   const { currentUser, updateProfile, logout, switchRole } = useAuth();
 
   const [notifAnchor, setNotifAnchor] = useState<null | HTMLElement>(null);
@@ -440,11 +439,6 @@ export const Topbar: React.FC<TopbarProps> = ({ onMobileToggle, onOpenSearch }) 
                 <ListItemText primary="System Settings" />
               </MenuItem>
             )}
-
-            <MenuItem onClick={() => { handleCloseProfile(); resetAllData(); }}>
-              <ListItemIcon><RotateCcw size={18} color="#f59e0b" /></ListItemIcon>
-              <ListItemText primary="Reset Dummy Data" secondary="Restore default seed" />
-            </MenuItem>
 
             <Divider />
 

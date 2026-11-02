@@ -18,7 +18,12 @@ import {
   Edit,
   DollarSign,
   TrendingUp,
+  CheckCircle,
+  Clock,
+  Key,
+  Send,
 } from 'lucide-react';
+import { useSchool } from '../../context/SchoolContext';
 import { AppModal } from '../../components/common/AppModal';
 import { AppButton } from '../../components/common/AppButton';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -38,7 +43,19 @@ export const StudentDetailModal: React.FC<StudentDetailModalProps> = ({
   student,
   onEdit,
 }) => {
+  const { inviteStudent } = useSchool();
+  const [inviting, setInviting] = React.useState(false);
+
   if (!student) return null;
+
+  const handleSendInvite = async () => {
+    setInviting(true);
+    try {
+      await inviteStudent(student.id);
+    } finally {
+      setInviting(false);
+    }
+  };
 
   return (
     <AppModal
@@ -187,6 +204,69 @@ export const StudentDetailModal: React.FC<StudentDetailModalProps> = ({
           </Box>
         </Paper>
       </Box>
+
+      {/* Portal Account & Security Status */}
+      <Paper
+        variant="outlined"
+        sx={{
+          mt: 3,
+          p: 2.5,
+          borderRadius: 2.5,
+          bgcolor: 'action.hover',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: 2.5,
+              bgcolor: 'background.paper',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            }}
+          >
+            <Key size={22} color="#2563eb" />
+          </Box>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
+                Student Portal Account Access
+              </Typography>
+              {student.portalStatus === 'Active' ? (
+                <Chip icon={<CheckCircle size={14} style={{ marginLeft: 6 }} />} label="Account Active" size="small" color="success" sx={{ fontWeight: 700 }} />
+              ) : student.portalStatus === 'Pending' ? (
+                <Chip icon={<Clock size={14} style={{ marginLeft: 6 }} />} label="Invitation Sent (Pending Setup)" size="small" color="warning" sx={{ fontWeight: 700 }} />
+              ) : (
+                <Chip label="Not Invited" size="small" sx={{ fontWeight: 600 }} />
+              )}
+            </Box>
+            <Typography variant="caption" color="text.secondary">
+              Registered email: <strong>{student.email || 'None'}</strong> — Students use this email and secure password to view grades, timetables, and notices.
+            </Typography>
+          </Box>
+        </Box>
+
+        {student.email && student.portalStatus !== 'Active' && (
+          <AppButton
+            variant="contained"
+            color="primary"
+            size="small"
+            loading={inviting}
+            icon={<Send size={15} />}
+            onClick={handleSendInvite}
+          >
+            {student.portalStatus === 'Pending' ? 'Resend Portal Invite' : 'Send Portal Invite Email'}
+          </AppButton>
+        )}
+      </Paper>
     </AppModal>
   );
 };

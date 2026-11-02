@@ -87,6 +87,36 @@ class SchoolDatabase {
     this.save();
     return this.data.users[idx];
   }
+  public deleteUser(id: string) {
+    const idx = this.data.users.findIndex((u) => u.id === id);
+    if (idx === -1) return false;
+    this.data.users.splice(idx, 1);
+    this.save();
+    return true;
+  }
+
+  // --- INVITATIONS ---
+  public getInvitations() {
+    if (!this.data.invitations) this.data.invitations = [];
+    return this.data.invitations;
+  }
+  public findInvitationByToken(token: string) {
+    return this.getInvitations().find((inv) => inv.token === token);
+  }
+  public addInvitation(invitation: any) {
+    if (!this.data.invitations) this.data.invitations = [];
+    this.data.invitations.unshift(invitation);
+    this.save();
+    return invitation;
+  }
+  public updateInvitation(token: string, updates: any) {
+    const list = this.getInvitations();
+    const idx = list.findIndex((inv) => inv.token === token);
+    if (idx === -1) return null;
+    list[idx] = { ...list[idx], ...updates };
+    this.save();
+    return list[idx];
+  }
 
   // --- STUDENTS ---
   public getStudents() { return this.data.students; }

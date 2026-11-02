@@ -6,6 +6,7 @@ import { hasRolePermission } from '../types/auth';
 // Auth Pages
 import { LoginPage } from '../modules/auth/LoginPage';
 import { RegisterPage } from '../modules/auth/RegisterPage';
+import { SetupAccountPage } from '../modules/auth/SetupAccountPage';
 import { ForgotPasswordPage } from '../modules/auth/ForgotPasswordPage';
 import { AccessDeniedPage } from '../modules/auth/AccessDeniedPage';
 
@@ -52,6 +53,7 @@ export const AppRoutes: React.FC = () => {
       {/* Public Auth Routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/setup-account" element={<SetupAccountPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
       {/* Role-Protected Application Routes */}

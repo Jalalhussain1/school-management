@@ -7,6 +7,8 @@ import {
   Typography,
   IconButton,
   Tooltip,
+  Chip,
+  CircularProgress,
 } from '@mui/material';
 import {
   UserPlus,
@@ -14,6 +16,9 @@ import {
   Edit,
   Trash2,
   Users,
+  Mail,
+  CheckCircle,
+  Clock,
 } from 'lucide-react';
 import { useSchool } from '../../context/SchoolContext';
 import { AppPageTitle } from '../../components/common/AppPageTitle';
@@ -29,7 +34,7 @@ import { StudentDetailModal } from './StudentDetailModal';
 import { Student } from '../../types';
 
 export const StudentsPage: React.FC = () => {
-  const { students, deleteStudent, classes } = useSchool();
+  const { students, deleteStudent, classes, inviteStudent } = useSchool();
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,6 +53,16 @@ export const StudentsPage: React.FC = () => {
   const [detailStudent, setDetailStudent] = useState<Student | null>(null);
 
   const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
+  const [invitingId, setInvitingId] = useState<string | null>(null);
+
+  const handleInvite = async (student: Student) => {
+    setInvitingId(student.id);
+    try {
+      await inviteStudent(student.id);
+    } finally {
+      setInvitingId(null);
+    }
+  };
 
   // Filtered students
   const filteredStudents = useMemo(() => {
@@ -184,11 +199,60 @@ export const StudentsPage: React.FC = () => {
       render: (row) => <StatusBadge status={row.status} />,
     },
     {
+      id: 'portalStatus',
+      label: 'Portal Access',
+      render: (row) => {
+        if (row.portalStatus === 'Active') {
+          return (
+            <Chip
+              icon={<CheckCircle size={13} style={{ marginLeft: 6 }} />}
+              label="Active"
+              size="small"
+              color="success"
+              variant="outlined"
+              sx={{ fontWeight: 700, height: 24, fontSize: '0.75rem' }}
+            />
+          );
+        }
+        if (row.portalStatus === 'Pending') {
+          return (
+            <Chip
+              icon={<Clock size={13} style={{ marginLeft: 6 }} />}
+              label="Invited"
+              size="small"
+              color="warning"
+              variant="outlined"
+              sx={{ fontWeight: 700, height: 24, fontSize: '0.75rem' }}
+            />
+          );
+        }
+        return (
+          <Chip
+            label="Not Invited"
+            size="small"
+            sx={{ fontWeight: 600, height: 24, fontSize: '0.75rem', bgcolor: 'action.hover', color: 'text.secondary' }}
+          />
+        );
+      },
+    },
+    {
       id: 'actions',
       label: 'Actions',
       align: 'right',
       render: (row) => (
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+          {row.email && row.portalStatus !== 'Active' && (
+            <Tooltip title={row.portalStatus === 'Pending' ? 'Resend Portal Invitation Email' : 'Send Portal Invitation Email'}>
+              <IconButton
+                size="small"
+                disabled={invitingId === row.id}
+                onClick={() => handleInvite(row)}
+                sx={{ color: 'warning.main' }}
+              >
+                {invitingId === row.id ? <CircularProgress size={16} color="inherit" /> : <Mail size={17} />}
+              </IconButton>
+            </Tooltip>
+          )}
           <Tooltip title="View Profile Dossier">
             <IconButton size="small" onClick={() => setDetailStudent(row)} sx={{ color: 'primary.main' }}>
               <Eye size={17} />

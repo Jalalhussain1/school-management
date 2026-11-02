@@ -5,7 +5,9 @@ import {
   Tabs,
   Tab,
   Typography,
+  Switch,
 } from '@mui/material';
+import { Mail } from 'lucide-react';
 import { AppModal } from '../../components/common/AppModal';
 import { AppInput } from '../../components/common/AppInput';
 import { AppDropdown } from '../../components/common/AppDropdown';
@@ -24,6 +26,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({ open, onClose, stude
   const isEditing = Boolean(student);
 
   const [tab, setTab] = useState(0);
+  const [sendInviteEmail, setSendInviteEmail] = useState(true);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -98,6 +101,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({ open, onClose, stude
     }
     setErrors({});
     setTab(0);
+    setSendInviteEmail(true);
   }, [student, open]);
 
   const validate = () => {
@@ -131,6 +135,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({ open, onClose, stude
         fullName: `${formData.firstName} ${formData.lastName}`.trim(),
         className,
         admissionDate: new Date().toISOString().split('T')[0],
+        sendInviteEmail,
         avatar: formData.gender === 'Female'
           ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150'
           : 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=150',
@@ -327,6 +332,56 @@ export const StudentModal: React.FC<StudentModalProps> = ({ open, onClose, stude
             value={formData.emergencyContact}
             onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
             placeholder="+1 (555) 999-9999"
+          />
+        </Box>
+      )}
+
+      {/* Instant Portal Account Invitation */}
+      {!isEditing && (
+        <Box
+          sx={{
+            mt: 3,
+            p: 2,
+            borderRadius: 2.5,
+            bgcolor: 'action.hover',
+            border: '1px solid',
+            borderColor: 'divider',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box
+              sx={{
+                width: 38,
+                height: 38,
+                borderRadius: '50%',
+                bgcolor: 'primary.50',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <Mail size={18} color="#2563eb" />
+            </Box>
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                Send Portal Setup & Invitation Email
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {formData.email
+                  ? `Student will receive an activation email at ${formData.email} to set password and log in.`
+                  : 'Enter student email above to dispatch instant portal invitation with password setup link.'}
+              </Typography>
+            </Box>
+          </Box>
+          <Switch
+            checked={sendInviteEmail}
+            onChange={(e) => setSendInviteEmail(e.target.checked)}
+            color="primary"
           />
         </Box>
       )}

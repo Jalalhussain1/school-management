@@ -5,6 +5,7 @@ import {
   createStudent,
   updateStudent,
   deleteStudent,
+  inviteStudent,
 } from '../controllers/studentController';
 import { optionalAuth } from '../middleware/auth';
 
@@ -15,6 +16,7 @@ router.use(optionalAuth);
 router.get('/', getStudents);
 router.get('/:id', getStudentById);
 router.post('/', createStudent);
+router.post('/:id/invite', inviteStudent);
 router.put('/:id', updateStudent);
 router.delete('/:id', deleteStudent);
 

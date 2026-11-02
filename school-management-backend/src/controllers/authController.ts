@@ -6,6 +6,7 @@ import { db } from '../database/db';
 import { config } from '../config';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { User, UserRole } from '../types';
+import { sendInvitationEmail } from '../services/emailService';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -260,6 +261,176 @@ export const switchRole = async (req: Request, res: Response) => {
       designation: user.designation,
       department: user.department,
       className: user.className,
+    },
+  });
+};
+
+// --- USER INVITATION & SETUP FLOW ---
+
+const inviteUserSchema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+  role: z.enum(['Admin', 'Teacher', 'Student', 'Parent']),
+  designation: z.string().optional(),
+});
+
+export const inviteUser = async (req: AuthenticatedRequest, res: Response) => {
+  const { name, email, role, designation } = inviteUserSchema.parse(req.body);
+
+  const existing = db.findUserByEmail(email);
+  if (existing) {
+    return res.status(409).json({
+      success: false,
+      message: 'A user account with this email address already exists',
+    });
+  }
+
+  // Generate invitation token
+  const token = `inv-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
+
+  const invitation = {
+    id: `inv-${Date.now()}`,
+    name,
+    email,
+    role,
+    designation: designation || (role === 'Admin' ? 'Administrator' : role === 'Teacher' ? 'Faculty Member' : role),
+    token,
+    status: 'Pending',
+    createdAt: new Date().toISOString(),
+    expiresAt,
+  };
+
+  db.addInvitation(invitation);
+
+  // Construct invite link for frontend
+  const inviteLink = `${req.headers.origin || 'http://localhost:5173'}/setup-account?token=${token}`;
+
+  // Send real email via SMTP
+  const emailResult = await sendInvitationEmail({
+    to: email,
+    name,
+    role,
+    inviteLink,
+  });
+
+  return res.status(201).json({
+    success: true,
+    message: emailResult.success
+      ? `Invitation email successfully sent to ${email}`
+      : `Invitation generated for ${email}. Email dispatch notice: ${emailResult.error || 'Pending SMTP password configuration'}`,
+    invitation,
+    inviteLink,
+    emailDispatched: emailResult.success,
+  });
+};
+
+export const getInvitations = async (_req: AuthenticatedRequest, res: Response) => {
+  const list = db.getInvitations();
+  return res.json({ success: true, invitations: list });
+};
+
+export const getAllUsers = async (_req: AuthenticatedRequest, res: Response) => {
+  const users = db.getUsers().map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    avatar: u.avatar,
+    designation: u.designation,
+    createdAt: u.createdAt,
+  }));
+  return res.json({ success: true, users });
+};
+
+export const verifyInvitation = async (req: Request, res: Response) => {
+  const { token } = req.query as { token?: string };
+  if (!token) {
+    return res.status(400).json({ success: false, message: 'Invitation token is missing' });
+  }
+
+  const invitation = db.findInvitationByToken(token);
+  if (!invitation) {
+    return res.status(404).json({ success: false, message: 'Invalid or non-existent invitation link' });
+  }
+
+  if (invitation.status === 'Accepted') {
+    return res.status(400).json({ success: false, message: 'This invitation has already been used and activated' });
+  }
+
+  if (new Date(invitation.expiresAt) < new Date()) {
+    return res.status(400).json({ success: false, message: 'This invitation link has expired. Please contact admin.' });
+  }
+
+  return res.json({
+    success: true,
+    invitation: {
+      email: invitation.email,
+      name: invitation.name,
+      role: invitation.role,
+      token: invitation.token,
+    },
+  });
+};
+
+const setupAccountSchema = z.object({
+  token: z.string(),
+  password: z.string().min(6),
+  avatar: z.string().optional(),
+});
+
+export const setupAccount = async (req: Request, res: Response) => {
+  const { token, password, avatar } = setupAccountSchema.parse(req.body);
+
+  const invitation = db.findInvitationByToken(token);
+  if (!invitation) {
+    return res.status(404).json({ success: false, message: 'Invalid or expired invitation token' });
+  }
+
+  if (invitation.status === 'Accepted') {
+    return res.status(400).json({ success: false, message: 'Account has already been set up for this invitation' });
+  }
+
+  const existing = db.findUserByEmail(invitation.email);
+  if (existing) {
+    return res.status(409).json({ success: false, message: 'User already exists' });
+  }
+
+  const salt = bcrypt.genSaltSync(10);
+  const passwordHash = bcrypt.hashSync(password, salt);
+
+  const student = db.getStudents().find((s) => s.email.toLowerCase() === invitation.email.toLowerCase());
+  const teacher = db.getTeachers().find((t) => t.email.toLowerCase() === invitation.email.toLowerCase());
+
+  const newUser: User = {
+    id: `usr-${Date.now()}`,
+    name: invitation.name,
+    email: invitation.email,
+    passwordHash,
+    role: invitation.role,
+    avatar: avatar || student?.avatar || teacher?.avatar || undefined,
+    designation: invitation.designation || (student ? `Student (${student.className})` : teacher ? teacher.designation : invitation.role),
+    department: teacher ? teacher.department : undefined,
+    className: student ? student.className : undefined,
+    createdAt: new Date().toISOString(),
+  };
+
+  db.addUser(newUser);
+  db.updateInvitation(token, { status: 'Accepted' });
+
+  if (avatar) {
+    if (student && !student.avatar) db.updateStudent(student.id, { avatar });
+    if (teacher && !teacher.avatar) db.updateTeacher(teacher.id, { avatar });
+  }
+
+  return res.status(201).json({
+    success: true,
+    message: 'Account configured and activated successfully! Please log in.',
+    user: {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
     },
   });
 };

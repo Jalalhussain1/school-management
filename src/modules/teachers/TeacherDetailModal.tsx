@@ -13,7 +13,13 @@ import {
   DollarSign,
   Edit,
   BookOpen,
+  Mail,
+  CheckCircle,
+  Clock,
+  Key,
+  Send,
 } from 'lucide-react';
+import { useSchool } from '../../context/SchoolContext';
 import { AppModal } from '../../components/common/AppModal';
 import { AppButton } from '../../components/common/AppButton';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -33,7 +39,19 @@ export const TeacherDetailModal: React.FC<TeacherDetailModalProps> = ({
   teacher,
   onEdit,
 }) => {
+  const { inviteTeacher } = useSchool();
+  const [inviting, setInviting] = React.useState(false);
+
   if (!teacher) return null;
+
+  const handleSendInvite = async () => {
+    setInviting(true);
+    try {
+      await inviteTeacher(teacher.id);
+    } finally {
+      setInviting(false);
+    }
+  };
 
   return (
     <AppModal
@@ -158,6 +176,69 @@ export const TeacherDetailModal: React.FC<TeacherDetailModalProps> = ({
           </Typography>
         </Paper>
       </Box>
+
+      {/* Staff Portal Account & Security Access */}
+      <Paper
+        variant="outlined"
+        sx={{
+          mt: 3,
+          p: 2.5,
+          borderRadius: 2.5,
+          bgcolor: 'action.hover',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: 2.5,
+              bgcolor: 'background.paper',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            }}
+          >
+            <Key size={22} color="#7c3aed" />
+          </Box>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
+                Faculty Portal Account Access
+              </Typography>
+              {teacher.portalStatus === 'Active' ? (
+                <Chip icon={<CheckCircle size={14} style={{ marginLeft: 6 }} />} label="Account Active" size="small" color="success" sx={{ fontWeight: 700 }} />
+              ) : teacher.portalStatus === 'Pending' ? (
+                <Chip icon={<Clock size={14} style={{ marginLeft: 6 }} />} label="Invitation Sent (Pending Setup)" size="small" color="warning" sx={{ fontWeight: 700 }} />
+              ) : (
+                <Chip label="Not Invited" size="small" sx={{ fontWeight: 600 }} />
+              )}
+            </Box>
+            <Typography variant="caption" color="text.secondary">
+              Official faculty email: <strong>{teacher.email || 'None'}</strong> — Instructors use this account to mark attendance, assign homework, and post exam results.
+            </Typography>
+          </Box>
+        </Box>
+
+        {teacher.email && teacher.portalStatus !== 'Active' && (
+          <AppButton
+            variant="contained"
+            color="secondary"
+            size="small"
+            loading={inviting}
+            icon={<Send size={15} />}
+            onClick={handleSendInvite}
+          >
+            {teacher.portalStatus === 'Pending' ? 'Resend Portal Invite' : 'Send Portal Invite Email'}
+          </AppButton>
+        )}
+      </Paper>
     </AppModal>
   );
 };

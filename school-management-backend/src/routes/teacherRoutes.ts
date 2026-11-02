@@ -5,6 +5,7 @@ import {
   createTeacher,
   updateTeacher,
   deleteTeacher,
+  inviteTeacher,
 } from '../controllers/teacherController';
 import { optionalAuth } from '../middleware/auth';
 
@@ -15,6 +16,7 @@ router.use(optionalAuth);
 router.get('/', getTeachers);
 router.get('/:id', getTeacherById);
 router.post('/', createTeacher);
+router.post('/:id/invite', inviteTeacher);
 router.put('/:id', updateTeacher);
 router.delete('/:id', deleteTeacher);
 

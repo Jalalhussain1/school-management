@@ -20,7 +20,31 @@ import {
   RotateCcw,
   Save,
   CheckCircle2,
+  Users,
+  UserPlus,
+  Copy,
+  Check,
+  ExternalLink,
+  Mail,
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Chip,
+  Avatar,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  Paper,
+  CircularProgress,
+} from '@mui/material';
+import { api } from '../../services/api';
+import { UserRole } from '../../types/auth';
 import { useSchool } from '../../context/SchoolContext';
 import { useAppTheme } from '../../context/ThemeContext';
 import { AppPageTitle } from '../../components/common/AppPageTitle';
@@ -33,6 +57,70 @@ export const SettingsPage: React.FC = () => {
   const { mode, toggleTheme } = useAppTheme();
 
   const [activeTab, setActiveTab] = useState(0);
+
+  // User Management & Invitation States
+  const [users, setUsers] = useState<any[]>([]);
+  const [invitations, setInvitations] = useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [inviteForm, setInviteForm] = useState({
+    name: '',
+    email: '',
+    role: 'Teacher' as UserRole,
+    designation: '',
+  });
+  const [inviting, setInviting] = useState(false);
+  const [lastGeneratedInvite, setLastGeneratedInvite] = useState<{
+    link: string;
+    email: string;
+    name: string;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const { showToast } = useSchool();
+
+  const loadUsersAndInvites = () => {
+    setLoadingUsers(true);
+    Promise.all([api.auth.getUsers(), api.auth.getInvitations()])
+      .then(([usersRes, invitesRes]) => {
+        if (usersRes.success) setUsers(usersRes.users);
+        if (invitesRes.success) setInvitations(invitesRes.invitations);
+      })
+      .catch(console.error)
+      .finally(() => setLoadingUsers(false));
+  };
+
+  const handleSendInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteForm.name.trim() || !inviteForm.email.trim()) {
+      showToast('Please enter both name and email', 'error');
+      return;
+    }
+    setInviting(true);
+    try {
+      const res = await api.auth.inviteUser({
+        name: inviteForm.name.trim(),
+        email: inviteForm.email.trim(),
+        role: inviteForm.role,
+        designation: inviteForm.designation.trim() || undefined,
+      });
+
+      if (res.success) {
+        showToast(`Invitation created & email dispatched for ${inviteForm.email}`, 'success');
+        setLastGeneratedInvite({
+          link: res.inviteLink,
+          email: inviteForm.email,
+          name: inviteForm.name,
+        });
+        setInviteForm({ name: '', email: '', role: 'Teacher', designation: '' });
+        loadUsersAndInvites();
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to create user invitation', 'error');
+    } finally {
+      setInviting(false);
+    }
+  };
 
   const [formData, setFormData] = useState({
     schoolName: settings.schoolName,
@@ -72,11 +160,18 @@ export const SettingsPage: React.FC = () => {
       />
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
+        <Tabs
+          value={activeTab}
+          onChange={(_, v) => {
+            setActiveTab(v);
+            if (v === 4) loadUsersAndInvites();
+          }}
+        >
           <Tab icon={<School size={16} />} iconPosition="start" label="School Profile" />
           <Tab icon={<Calendar size={16} />} iconPosition="start" label="Academic Session" />
           <Tab icon={<Globe size={16} />} iconPosition="start" label="Preferences & Alerts" />
           <Tab icon={<Palette size={16} />} iconPosition="start" label="Theme & Appearance" />
+          <Tab icon={<Users size={16} />} iconPosition="start" label="Users & Invitations" />
         </Tabs>
       </Box>
 
@@ -317,6 +412,260 @@ export const SettingsPage: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Tab 4: User Accounts & Invitations */}
+      {activeTab === 4 && (
+        <Card>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5, flexWrap: 'wrap', gap: 2 }}>
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                  User Management & Invitations
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Invite teachers, administrators, students, or parents by email with secure self-setup links.
+                </Typography>
+              </Box>
+              <AppButton
+                variant="contained"
+                color="primary"
+                icon={<UserPlus size={16} />}
+                onClick={() => {
+                  setLastGeneratedInvite(null);
+                  setInviteModalOpen(true);
+                }}
+              >
+                Invite New User
+              </AppButton>
+            </Box>
+
+            {/* Recent Invitations */}
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'primary.main' }}>
+              Pending & Sent Invitations
+            </Typography>
+            {invitations.length === 0 ? (
+              <Box sx={{ p: 3, textAlign: 'center', bgcolor: 'action.hover', borderRadius: 2, mb: 4 }}>
+                <Typography variant="body2" color="text.secondary">
+                  No invitations generated yet. Click "Invite New User" above to send your first email invite.
+                </Typography>
+              </Box>
+            ) : (
+              <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, mb: 4 }}>
+                <Table size="small">
+                  <TableHead sx={{ bgcolor: 'action.hover' }}>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 700 }}>Invited User</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Email Address</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Assigned Role</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }} align="right">Invitation Link</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {invitations.map((inv) => {
+                      const link = `${window.location.origin}/setup-account?token=${inv.token}`;
+                      return (
+                        <TableRow key={inv.id} hover>
+                          <TableCell sx={{ fontWeight: 600 }}>{inv.name}</TableCell>
+                          <TableCell>{inv.email}</TableCell>
+                          <TableCell>
+                            <Chip label={inv.role} size="small" color={inv.role === 'Admin' ? 'primary' : inv.role === 'Teacher' ? 'secondary' : 'default'} sx={{ fontWeight: 600 }} />
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={inv.status}
+                              size="small"
+                              color={inv.status === 'Accepted' ? 'success' : inv.status === 'Pending' ? 'warning' : 'error'}
+                              sx={{ fontWeight: 600 }}
+                            />
+                          </TableCell>
+                          <TableCell align="right">
+                            {inv.status === 'Pending' ? (
+                              <AppButton
+                                size="small"
+                                variant="outlined"
+                                icon={<Copy size={13} />}
+                                onClick={() => {
+                                  navigator.clipboard.writeText(link);
+                                  showToast('Invitation link copied to clipboard!', 'success');
+                                }}
+                              >
+                                Copy Link
+                              </AppButton>
+                            ) : (
+                              <Typography variant="caption" color="text.secondary">Activated</Typography>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+
+            {/* Active Users Table */}
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>
+              Active Registered Accounts ({users.length})
+            </Typography>
+            <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
+              <Table size="small">
+                <TableHead sx={{ bgcolor: 'action.hover' }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 700 }}>User</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Official Email</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Designation / Scope</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {users.map((u) => (
+                    <TableRow key={u.id} hover>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Avatar src={u.avatar} sx={{ width: 32, height: 32, fontSize: '0.8rem', bgcolor: 'primary.main' }}>
+                            {u.name?.charAt(0)}
+                          </Avatar>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{u.name}</Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>{u.email}</TableCell>
+                      <TableCell>{u.designation || u.role}</TableCell>
+                      <TableCell>
+                        <Chip label={u.role} size="small" color={u.role === 'Admin' ? 'primary' : u.role === 'Teacher' ? 'secondary' : 'default'} sx={{ fontWeight: 700 }} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Invite User Dialog */}
+      <Dialog
+        open={inviteModalOpen}
+        onClose={() => setInviteModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        sx={{ '& .MuiDialog-paper': { borderRadius: 3 } }}
+      >
+        <DialogTitle sx={{ fontWeight: 800 }}>
+          {lastGeneratedInvite ? 'Invitation Email Dispatched!' : 'Invite / Add New User'}
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          {lastGeneratedInvite ? (
+            <Box sx={{ py: 1 }}>
+              <Alert severity="success" sx={{ mb: 3 }}>
+                An invitation email has been sent to <strong>{lastGeneratedInvite.email}</strong>.
+              </Alert>
+
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                When <strong>{lastGeneratedInvite.name}</strong> clicks the email link, they will be taken to the secure account setup page to verify their email, set their password, and upload their photo:
+              </Typography>
+
+              <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2, border: 1, borderColor: 'divider', mb: 3 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', display: 'block', mb: 0.5 }}>
+                  INVITATION URL LINK
+                </Typography>
+                <Typography variant="body2" sx={{ wordBreak: 'break-all', fontFamily: 'monospace', mb: 2 }}>
+                  {lastGeneratedInvite.link}
+                </Typography>
+
+                <Box sx={{ display: 'flex', gap: 1.5 }}>
+                  <AppButton
+                    variant="contained"
+                    size="small"
+                    icon={copied ? <Check size={14} /> : <Copy size={14} />}
+                    onClick={() => {
+                      navigator.clipboard.writeText(lastGeneratedInvite.link);
+                      setCopied(true);
+                      showToast('Invite link copied!', 'success');
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                  >
+                    {copied ? 'Copied Link' : 'Copy Invitation Link'}
+                  </AppButton>
+
+                  <AppButton
+                    variant="outlined"
+                    size="small"
+                    icon={<ExternalLink size={14} />}
+                    onClick={() => window.open(lastGeneratedInvite.link, '_blank')}
+                  >
+                    Open Page Preview
+                  </AppButton>
+                </Box>
+              </Box>
+            </Box>
+          ) : (
+            <Box component="form" onSubmit={handleSendInvite} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Enter user details below. An automated activation invitation link will be created for them.
+              </Typography>
+
+              <AppInput
+                label="Full Name"
+                placeholder="e.g. Professor David Miller"
+                value={inviteForm.name}
+                onChange={(e) => setInviteForm({ ...inviteForm, name: e.target.value })}
+                required
+              />
+
+              <AppInput
+                label="Official Email Address"
+                type="email"
+                placeholder="e.g. david.miller@school.edu"
+                value={inviteForm.email}
+                onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
+                required
+              />
+
+              <AppDropdown
+                label="Portal Role Permission"
+                value={inviteForm.role}
+                onChange={(e) => setInviteForm({ ...inviteForm, role: e.target.value as UserRole })}
+                options={[
+                  { value: 'Admin', label: 'Administrator / Principal' },
+                  { value: 'Teacher', label: 'Teacher / Faculty Instructor' },
+                  { value: 'Student', label: 'Student' },
+                  { value: 'Parent', label: 'Parent / Guardian' },
+                ]}
+              />
+
+              <AppInput
+                label="Designation / Title (Optional)"
+                placeholder="e.g. Senior Faculty - Mathematics"
+                value={inviteForm.designation}
+                onChange={(e) => setInviteForm({ ...inviteForm, designation: e.target.value })}
+              />
+
+              <DialogActions sx={{ p: 0, pt: 2 }}>
+                <AppButton variant="outlined" onClick={() => setInviteModalOpen(false)}>
+                  Cancel
+                </AppButton>
+                <AppButton
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  loading={inviting}
+                  icon={<Mail size={16} />}
+                >
+                  Send Invitation
+                </AppButton>
+              </DialogActions>
+            </Box>
+          )}
+        </DialogContent>
+        {lastGeneratedInvite && (
+          <DialogActions sx={{ p: 2 }}>
+            <AppButton variant="contained" onClick={() => setInviteModalOpen(false)}>
+              Done
+            </AppButton>
+          </DialogActions>
+        )}
+      </Dialog>
     </Box>
   );
 };

@@ -105,6 +105,29 @@ export const api = {
       if (res.token) setAuthToken(res.token);
       return res;
     },
+    inviteUser: async (data: { name: string; email: string; role: UserRole; designation?: string }) => {
+      return apiRequest<{ success: boolean; message: string; invitation: any; inviteLink: string }>('/auth/invite', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    getInvitations: async () => {
+      return apiRequest<{ success: boolean; invitations: any[] }>('/auth/invitations');
+    },
+    getUsers: async () => {
+      return apiRequest<{ success: boolean; users: any[] }>('/auth/users');
+    },
+    verifyInvite: async (token: string) => {
+      return apiRequest<{ success: boolean; message?: string; invitation: { email: string; name: string; role: UserRole; token: string } }>(
+        `/auth/verify-invite?token=${encodeURIComponent(token)}`
+      );
+    },
+    setupAccount: async (data: { token: string; password: string; avatar?: string }) => {
+      return apiRequest<{ success: boolean; message: string; user: AuthUser }>('/auth/setup-account', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
   },
 
   // --- STUDENTS ---
@@ -116,7 +139,7 @@ export const api = {
     getById: async (id: string) => {
       return apiRequest<{ success: boolean; data: Student }>(`/students/${id}`);
     },
-    create: async (student: Omit<Student, 'id'>) => {
+    create: async (student: Omit<Student, 'id'> & { sendInviteEmail?: boolean }) => {
       return apiRequest<{ success: boolean; message: string; data: Student }>('/students', {
         method: 'POST',
         body: JSON.stringify(student),
@@ -133,6 +156,11 @@ export const api = {
         method: 'DELETE',
       });
     },
+    invite: async (id: string) => {
+      return apiRequest<{ success: boolean; message: string; inviteLink?: string; emailDispatched?: boolean }>(`/students/${id}/invite`, {
+        method: 'POST',
+      });
+    },
   },
 
   // --- TEACHERS ---
@@ -144,7 +172,7 @@ export const api = {
     getById: async (id: string) => {
       return apiRequest<{ success: boolean; data: Teacher }>(`/teachers/${id}`);
     },
-    create: async (teacher: Omit<Teacher, 'id'>) => {
+    create: async (teacher: Omit<Teacher, 'id'> & { sendInviteEmail?: boolean }) => {
       return apiRequest<{ success: boolean; message: string; data: Teacher }>('/teachers', {
         method: 'POST',
         body: JSON.stringify(teacher),
@@ -159,6 +187,11 @@ export const api = {
     delete: async (id: string) => {
       return apiRequest<{ success: boolean; message: string }>(`/teachers/${id}`, {
         method: 'DELETE',
+      });
+    },
+    invite: async (id: string) => {
+      return apiRequest<{ success: boolean; message: string; inviteLink?: string; emailDispatched?: boolean }>(`/teachers/${id}/invite`, {
+        method: 'POST',
       });
     },
   },

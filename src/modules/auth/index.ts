@@ -1,5 +1,6 @@
 export { LoginPage } from './LoginPage';
 export { RegisterPage } from './RegisterPage';
+export { SetupAccountPage } from './SetupAccountPage';
 export { ForgotPasswordPage } from './ForgotPasswordPage';
 export { AuthLayout } from './AuthLayout';
 export { AccessDeniedPage } from './AccessDeniedPage';

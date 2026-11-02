@@ -24,6 +24,18 @@ export interface AuthUser {
   className?: string;
 }
 
+export interface UserInvitation {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  token: string;
+  designation?: string;
+  status: 'Pending' | 'Accepted' | 'Expired';
+  createdAt: string;
+  expiresAt: string;
+}
+
 export type StudentStatus = 'Active' | 'Inactive' | 'Graduated';
 export type Gender = 'Male' | 'Female' | 'Other';
 
@@ -53,6 +65,7 @@ export interface Student {
   emergencyContact: string;
   attendanceRate?: number;
   totalFeeDue?: number;
+  portalStatus?: 'Active' | 'Pending' | 'Not Invited';
 }
 
 export type TeacherStatus = 'Active' | 'On Leave' | 'Resigned';
@@ -75,6 +88,7 @@ export interface Teacher {
   subjects: string[];
   avatar?: string;
   address?: string;
+  portalStatus?: 'Active' | 'Pending' | 'Not Invited';
 }
 
 export interface SchoolClass {
@@ -345,4 +359,5 @@ export interface DatabaseSchema {
   events: SchoolEvent[];
   notifications: NotificationItem[];
   settings: SchoolSettings;
+  invitations?: UserInvitation[];
 }

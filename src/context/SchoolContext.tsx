@@ -71,14 +71,16 @@ interface SchoolContextType {
   clearAllNotifications: () => void;
 
   // Student CRUD
-  addStudent: (student: Omit<Student, 'id'>) => Promise<void>;
+  addStudent: (student: Omit<Student, 'id'> & { sendInviteEmail?: boolean }) => Promise<void>;
   updateStudent: (id: string, updated: Partial<Student>) => Promise<void>;
   deleteStudent: (id: string) => Promise<void>;
+  inviteStudent: (id: string) => Promise<boolean>;
 
   // Teacher CRUD
-  addTeacher: (teacher: Omit<Teacher, 'id'>) => Promise<void>;
+  addTeacher: (teacher: Omit<Teacher, 'id'> & { sendInviteEmail?: boolean }) => Promise<void>;
   updateTeacher: (id: string, updated: Partial<Teacher>) => Promise<void>;
   deleteTeacher: (id: string) => Promise<void>;
+  inviteTeacher: (id: string) => Promise<boolean>;
 
   // Class CRUD
   addClass: (cls: Omit<SchoolClass, 'id'>) => Promise<void>;
@@ -309,12 +311,12 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   // Student Actions
-  const addStudent = async (studentData: Omit<Student, 'id'>) => {
+  const addStudent = async (studentData: Omit<Student, 'id'> & { sendInviteEmail?: boolean }) => {
     try {
       const res = await api.students.create(studentData);
       if (res.success && res.data) {
         setStudents(prev => [res.data, ...prev]);
-        showToast(`Student "${res.data.fullName}" added successfully`);
+        showToast(res.message || `Student "${res.data.fullName}" added successfully`);
         return;
       }
     } catch (err: any) {
@@ -329,9 +331,27 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       fullName: `${studentData.firstName} ${studentData.lastName}`.trim(),
       attendanceRate: 100,
       totalFeeDue: 0,
+      portalStatus: studentData.sendInviteEmail !== false ? 'Pending' : 'Not Invited',
     };
     setStudents(prev => [fallback, ...prev]);
     showToast(`Student "${fallback.fullName}" added successfully`);
+  };
+
+  const inviteStudent = async (id: string): Promise<boolean> => {
+    try {
+      const res = await api.students.invite(id);
+      if (res.success) {
+        setStudents(prev => prev.map(s => s.id === id ? { ...s, portalStatus: 'Pending' } : s));
+        showToast(res.message || 'Invitation sent successfully', 'success');
+        return true;
+      } else {
+        showToast(res.message || 'Failed to send invite', 'error');
+        return false;
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to send portal invitation', 'error');
+      return false;
+    }
   };
 
   const updateStudent = async (id: string, updated: Partial<Student>) => {
@@ -363,12 +383,12 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   // Teacher Actions
-  const addTeacher = async (teacherData: Omit<Teacher, 'id'>) => {
+  const addTeacher = async (teacherData: Omit<Teacher, 'id'> & { sendInviteEmail?: boolean }) => {
     try {
       const res = await api.teachers.create(teacherData);
       if (res.success && res.data) {
         setTeachers(prev => [res.data, ...prev]);
-        showToast(`Faculty member "${res.data.fullName}" added successfully`);
+        showToast(res.message || `Faculty member "${res.data.fullName}" added successfully`);
         return;
       }
     } catch (err: any) {
@@ -380,9 +400,27 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       id: `tch-${Date.now()}`,
       employeeId: teacherData.employeeId || `EMP-T-${Math.floor(200 + Math.random() * 800)}`,
       fullName: `${teacherData.firstName} ${teacherData.lastName}`.trim(),
+      portalStatus: teacherData.sendInviteEmail !== false ? 'Pending' : 'Not Invited',
     };
     setTeachers(prev => [fallback, ...prev]);
     showToast(`Faculty member "${fallback.fullName}" added successfully`);
+  };
+
+  const inviteTeacher = async (id: string): Promise<boolean> => {
+    try {
+      const res = await api.teachers.invite(id);
+      if (res.success) {
+        setTeachers(prev => prev.map(t => t.id === id ? { ...t, portalStatus: 'Pending' } : t));
+        showToast(res.message || 'Faculty invitation sent successfully', 'success');
+        return true;
+      } else {
+        showToast(res.message || 'Failed to send invite', 'error');
+        return false;
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to send portal invitation', 'error');
+      return false;
+    }
   };
 
   const updateTeacher = async (id: string, updated: Partial<Teacher>) => {
@@ -986,9 +1024,11 @@ export const SchoolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         addStudent,
         updateStudent,
         deleteStudent,
+        inviteStudent,
         addTeacher,
         updateTeacher,
         deleteTeacher,
+        inviteTeacher,
         addClass,
         updateClass,
         deleteClass,
