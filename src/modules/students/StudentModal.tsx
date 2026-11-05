@@ -136,9 +136,7 @@ export const StudentModal: React.FC<StudentModalProps> = ({ open, onClose, stude
         className,
         admissionDate: new Date().toISOString().split('T')[0],
         sendInviteEmail,
-        avatar: formData.gender === 'Female'
-          ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150'
-          : 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=150',
+        avatar: '',
       });
     }
     onClose();

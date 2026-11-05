@@ -42,7 +42,7 @@ export const TeachersPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('ALL');
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(25);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);

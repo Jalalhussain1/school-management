@@ -108,9 +108,7 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({ open, onClose, teach
         fullName: `${formData.firstName} ${formData.lastName}`.trim(),
         subjects: subjectsArr,
         sendInviteEmail,
-        avatar: formData.gender === 'Female'
-          ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150'
-          : 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=150',
+        avatar: '',
       });
     }
     onClose();
