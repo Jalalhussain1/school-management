@@ -11,22 +11,23 @@ import {
   updateRoute,
   deleteRoute,
 } from '../controllers/transportController';
-import { optionalAuth } from '../middleware/auth';
+import { optionalAuth, authenticateToken, requireRoles } from '../middleware/auth';
 
 const router = Router();
 
-router.use(optionalAuth);
+// All roles can view vehicles and routes
+router.get('/vehicles', optionalAuth, getVehicles);
+router.get('/vehicles/:id', optionalAuth, getVehicleById);
+router.get('/routes', optionalAuth, getRoutes);
+router.get('/routes/:id', optionalAuth, getRouteById);
 
-router.get('/vehicles', getVehicles);
-router.get('/vehicles/:id', getVehicleById);
-router.post('/vehicles', createVehicle);
-router.put('/vehicles/:id', updateVehicle);
-router.delete('/vehicles/:id', deleteVehicle);
+// Only Admin can manage vehicles and routes
+router.post('/vehicles', authenticateToken, requireRoles('Admin'), createVehicle);
+router.put('/vehicles/:id', authenticateToken, requireRoles('Admin'), updateVehicle);
+router.delete('/vehicles/:id', authenticateToken, requireRoles('Admin'), deleteVehicle);
 
-router.get('/routes', getRoutes);
-router.get('/routes/:id', getRouteById);
-router.post('/routes', createRoute);
-router.put('/routes/:id', updateRoute);
-router.delete('/routes/:id', deleteRoute);
+router.post('/routes', authenticateToken, requireRoles('Admin'), createRoute);
+router.put('/routes/:id', authenticateToken, requireRoles('Admin'), updateRoute);
+router.delete('/routes/:id', authenticateToken, requireRoles('Admin'), deleteRoute);
 
 export default router;

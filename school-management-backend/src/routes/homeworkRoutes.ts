@@ -6,16 +6,17 @@ import {
   updateHomework,
   deleteHomework,
 } from '../controllers/homeworkController';
-import { optionalAuth } from '../middleware/auth';
+import { optionalAuth, authenticateToken, requireRoles } from '../middleware/auth';
 
 const router = Router();
 
-router.use(optionalAuth);
+// All roles can read homework
+router.get('/', optionalAuth, getHomeworkList);
+router.get('/:id', optionalAuth, getHomeworkById);
 
-router.get('/', getHomeworkList);
-router.get('/:id', getHomeworkById);
-router.post('/', createHomework);
-router.put('/:id', updateHomework);
-router.delete('/:id', deleteHomework);
+// Only Admin and Teacher can create/update/delete homework
+router.post('/', authenticateToken, requireRoles('Admin', 'Teacher'), createHomework);
+router.put('/:id', authenticateToken, requireRoles('Admin', 'Teacher'), updateHomework);
+router.delete('/:id', authenticateToken, requireRoles('Admin', 'Teacher'), deleteHomework);
 
 export default router;

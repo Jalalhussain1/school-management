@@ -7,17 +7,17 @@ import {
   deleteStudent,
   inviteStudent,
 } from '../controllers/studentController';
-import { optionalAuth } from '../middleware/auth';
+import { authenticateToken, optionalAuth, requireRoles } from '../middleware/auth';
 
 const router = Router();
 
-router.use(optionalAuth);
+router.get('/', optionalAuth, getStudents);
+router.get('/:id', optionalAuth, getStudentById);
 
-router.get('/', getStudents);
-router.get('/:id', getStudentById);
-router.post('/', createStudent);
-router.post('/:id/invite', inviteStudent);
-router.put('/:id', updateStudent);
-router.delete('/:id', deleteStudent);
+// Admin-only operations: Admission, Inviting, Editing, Deleting
+router.post('/', authenticateToken, requireRoles('Admin'), createStudent);
+router.post('/:id/invite', authenticateToken, requireRoles('Admin'), inviteStudent);
+router.put('/:id', authenticateToken, requireRoles('Admin'), updateStudent);
+router.delete('/:id', authenticateToken, requireRoles('Admin'), deleteStudent);
 
 export default router;

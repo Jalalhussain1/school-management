@@ -8,18 +8,21 @@ import {
   getExamResults,
   saveExamResult,
 } from '../controllers/examController';
-import { optionalAuth } from '../middleware/auth';
+import { optionalAuth, authenticateToken, requireRoles } from '../middleware/auth';
 
 const router = Router();
 
-router.use(optionalAuth);
+// All roles can read exams and results
+router.get('/', optionalAuth, getExams);
+router.get('/results', optionalAuth, getExamResults);
+router.get('/:id', optionalAuth, getExamById);
 
-router.get('/', getExams);
-router.get('/results', getExamResults);
-router.get('/:id', getExamById);
-router.post('/', createExam);
-router.put('/:id', updateExam);
-router.delete('/:id', deleteExam);
-router.post('/results', saveExamResult);
+// Only Admin can create/update/delete exams
+router.post('/', authenticateToken, requireRoles('Admin'), createExam);
+router.put('/:id', authenticateToken, requireRoles('Admin'), updateExam);
+router.delete('/:id', authenticateToken, requireRoles('Admin'), deleteExam);
+
+// Admin and Teacher can save/grade results
+router.post('/results', authenticateToken, requireRoles('Admin', 'Teacher'), saveExamResult);
 
 export default router;

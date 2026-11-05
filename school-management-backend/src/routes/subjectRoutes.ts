@@ -6,16 +6,16 @@ import {
   updateSubject,
   deleteSubject,
 } from '../controllers/subjectController';
-import { optionalAuth } from '../middleware/auth';
+import { authenticateToken, optionalAuth, requireRoles } from '../middleware/auth';
 
 const router = Router();
 
-router.use(optionalAuth);
+router.get('/', optionalAuth, getSubjects);
+router.get('/:id', optionalAuth, getSubjectById);
 
-router.get('/', getSubjects);
-router.get('/:id', getSubjectById);
-router.post('/', createSubject);
-router.put('/:id', updateSubject);
-router.delete('/:id', deleteSubject);
+// Admin-only: Curriculum & Subject management
+router.post('/', authenticateToken, requireRoles('Admin'), createSubject);
+router.put('/:id', authenticateToken, requireRoles('Admin'), updateSubject);
+router.delete('/:id', authenticateToken, requireRoles('Admin'), deleteSubject);
 
 export default router;

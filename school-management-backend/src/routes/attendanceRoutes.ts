@@ -4,14 +4,14 @@ import {
   batchSaveAttendance,
   getAttendanceSummary,
 } from '../controllers/attendanceController';
-import { optionalAuth } from '../middleware/auth';
+import { authenticateToken, optionalAuth, requireRoles } from '../middleware/auth';
 
 const router = Router();
 
-router.use(optionalAuth);
+router.get('/', optionalAuth, getAttendance);
+router.get('/summary', optionalAuth, getAttendanceSummary);
 
-router.get('/', getAttendance);
-router.post('/batch', batchSaveAttendance);
-router.get('/summary', getAttendanceSummary);
+// Attendance marking: Only Admin and Teachers can mark and submit registers
+router.post('/batch', authenticateToken, requireRoles('Admin', 'Teacher'), batchSaveAttendance);
 
 export default router;

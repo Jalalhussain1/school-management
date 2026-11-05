@@ -4,14 +4,15 @@ import {
   updateSettings,
   resetAllData,
 } from '../controllers/settingController';
-import { optionalAuth } from '../middleware/auth';
+import { optionalAuth, authenticateToken, requireRoles } from '../middleware/auth';
 
 const router = Router();
 
-router.use(optionalAuth);
+// Anyone can read settings (school info, etc.)
+router.get('/', optionalAuth, getSettings);
 
-router.get('/', getSettings);
-router.put('/', updateSettings);
-router.post('/reset', resetAllData);
+// Only Admin can update settings or reset data
+router.put('/', authenticateToken, requireRoles('Admin'), updateSettings);
+router.post('/reset', authenticateToken, requireRoles('Admin'), resetAllData);
 
 export default router;

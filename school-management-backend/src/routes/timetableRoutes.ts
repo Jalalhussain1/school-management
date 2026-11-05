@@ -5,15 +5,15 @@ import {
   updateTimetableSlot,
   deleteTimetableSlot,
 } from '../controllers/timetableController';
-import { optionalAuth } from '../middleware/auth';
+import { authenticateToken, optionalAuth, requireRoles } from '../middleware/auth';
 
 const router = Router();
 
-router.use(optionalAuth);
+router.get('/', optionalAuth, getTimetable);
 
-router.get('/', getTimetable);
-router.post('/', createTimetableSlot);
-router.put('/:id', updateTimetableSlot);
-router.delete('/:id', deleteTimetableSlot);
+// Admin-only: Timetable period slot creation, editing, deletion
+router.post('/', authenticateToken, requireRoles('Admin'), createTimetableSlot);
+router.put('/:id', authenticateToken, requireRoles('Admin'), updateTimetableSlot);
+router.delete('/:id', authenticateToken, requireRoles('Admin'), deleteTimetableSlot);
 
 export default router;

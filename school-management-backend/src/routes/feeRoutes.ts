@@ -8,18 +8,21 @@ import {
   payFeeVoucher,
   deleteFeeVoucher,
 } from '../controllers/feeController';
-import { optionalAuth } from '../middleware/auth';
+import { authenticateToken, requireRoles } from '../middleware/auth';
 
 const router = Router();
 
-router.use(optionalAuth);
+// Financial Management: Only Admin manages structures; Admin & Parent view and settle vouchers
+router.get('/categories', authenticateToken, requireRoles('Admin'), getFeeCategories);
+router.get('/', authenticateToken, requireRoles('Admin', 'Parent'), getFeeVouchers);
+router.get('/:id', authenticateToken, requireRoles('Admin', 'Parent'), getFeeVoucherById);
 
-router.get('/categories', getFeeCategories);
-router.get('/', getFeeVouchers);
-router.get('/:id', getFeeVoucherById);
-router.post('/', createFeeVoucher);
-router.put('/:id', updateFeeVoucher);
-router.post('/:id/pay', payFeeVoucher);
-router.delete('/:id', deleteFeeVoucher);
+// Admin-only billing actions
+router.post('/', authenticateToken, requireRoles('Admin'), createFeeVoucher);
+router.put('/:id', authenticateToken, requireRoles('Admin'), updateFeeVoucher);
+router.delete('/:id', authenticateToken, requireRoles('Admin'), deleteFeeVoucher);
+
+// Payment settlement: Both Admin and Parent can pay
+router.post('/:id/pay', authenticateToken, requireRoles('Admin', 'Parent'), payFeeVoucher);
 
 export default router;

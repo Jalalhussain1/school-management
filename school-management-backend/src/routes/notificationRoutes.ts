@@ -4,14 +4,13 @@ import {
   markNotificationRead,
   clearAllNotifications,
 } from '../controllers/notificationController';
-import { optionalAuth } from '../middleware/auth';
+import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 
-router.use(optionalAuth);
-
-router.get('/', getNotifications);
-router.put('/:id/read', markNotificationRead);
-router.put('/clear-all', clearAllNotifications);
+// All authenticated users can access their notifications
+router.get('/', authenticateToken, getNotifications);
+router.put('/:id/read', authenticateToken, markNotificationRead);
+router.put('/clear-all', authenticateToken, clearAllNotifications);
 
 export default router;

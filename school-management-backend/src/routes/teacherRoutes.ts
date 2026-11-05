@@ -7,17 +7,17 @@ import {
   deleteTeacher,
   inviteTeacher,
 } from '../controllers/teacherController';
-import { optionalAuth } from '../middleware/auth';
+import { authenticateToken, optionalAuth, requireRoles } from '../middleware/auth';
 
 const router = Router();
 
-router.use(optionalAuth);
+router.get('/', optionalAuth, getTeachers);
+router.get('/:id', optionalAuth, getTeacherById);
 
-router.get('/', getTeachers);
-router.get('/:id', getTeacherById);
-router.post('/', createTeacher);
-router.post('/:id/invite', inviteTeacher);
-router.put('/:id', updateTeacher);
-router.delete('/:id', deleteTeacher);
+// Admin-only faculty operations: Hiring, Inviting, Editing, Deleting
+router.post('/', authenticateToken, requireRoles('Admin'), createTeacher);
+router.post('/:id/invite', authenticateToken, requireRoles('Admin'), inviteTeacher);
+router.put('/:id', authenticateToken, requireRoles('Admin'), updateTeacher);
+router.delete('/:id', authenticateToken, requireRoles('Admin'), deleteTeacher);
 
 export default router;

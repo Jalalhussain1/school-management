@@ -9,20 +9,21 @@ import {
   issueBook,
   returnBook,
 } from '../controllers/libraryController';
-import { optionalAuth } from '../middleware/auth';
+import { optionalAuth, authenticateToken, requireRoles } from '../middleware/auth';
 
 const router = Router();
 
-router.use(optionalAuth);
+// All roles can read books and borrow records
+router.get('/books', optionalAuth, getBooks);
+router.get('/books/:id', optionalAuth, getBookById);
+router.get('/borrows', optionalAuth, getBorrowRecords);
 
-router.get('/books', getBooks);
-router.get('/books/:id', getBookById);
-router.post('/books', createBook);
-router.put('/books/:id', updateBook);
-router.delete('/books/:id', deleteBook);
+// Only Admin can manage books and issue/return
+router.post('/books', authenticateToken, requireRoles('Admin'), createBook);
+router.put('/books/:id', authenticateToken, requireRoles('Admin'), updateBook);
+router.delete('/books/:id', authenticateToken, requireRoles('Admin'), deleteBook);
 
-router.get('/borrows', getBorrowRecords);
-router.post('/borrows/issue', issueBook);
-router.post('/borrows/:recordId/return', returnBook);
+router.post('/borrows/issue', authenticateToken, requireRoles('Admin'), issueBook);
+router.post('/borrows/:recordId/return', authenticateToken, requireRoles('Admin'), returnBook);
 
 export default router;

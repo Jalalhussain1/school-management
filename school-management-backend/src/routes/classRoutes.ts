@@ -6,16 +6,16 @@ import {
   updateClass,
   deleteClass,
 } from '../controllers/classController';
-import { optionalAuth } from '../middleware/auth';
+import { authenticateToken, optionalAuth, requireRoles } from '../middleware/auth';
 
 const router = Router();
 
-router.use(optionalAuth);
+router.get('/', optionalAuth, getClasses);
+router.get('/:id', optionalAuth, getClassById);
 
-router.get('/', getClasses);
-router.get('/:id', getClassById);
-router.post('/', createClass);
-router.put('/:id', updateClass);
-router.delete('/:id', deleteClass);
+// Admin-only: Create class/section, Update, Delete
+router.post('/', authenticateToken, requireRoles('Admin'), createClass);
+router.put('/:id', authenticateToken, requireRoles('Admin'), updateClass);
+router.delete('/:id', authenticateToken, requireRoles('Admin'), deleteClass);
 
 export default router;
